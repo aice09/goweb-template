@@ -12,3 +12,6 @@ coverage.html
 backups/
 
 fast-crud-mcp
+
+.venv/
+docs/_build/
