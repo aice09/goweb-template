@@ -70,7 +70,29 @@ func (a *App) dispatchNotifications(body []byte) {
 		if teamURL != "" {
 			var event Event
 			if json.Unmarshal(body, &event) == nil {
-				card := fiber.Map{"type": "message", "attachments": []fiber.Map{{"contentType": "application/vnd.microsoft.card.adaptive", "contentUrl": nil, "content": fiber.Map{"$schema": "http://adaptivecards.io/schemas/adaptive-card.json", "type": "AdaptiveCard", "version": "1.5", "body": []fiber.Map{{"type": "TextBlock", "text": fmt.Sprintf("%s: %s", env("APP_NAME", "Fast CRUD"), event.Type), "wrap": true}, {"type": "TextBlock", "text": fmt.Sprintf("Item ID: %d\nName: %s\nTime: %s", event.Item.ID, event.Item.Name, event.Timestamp.Format(time.RFC3339)), "wrap": true}}}}}
+				card := map[string]any{
+					"type": "message",
+					"attachments": []map[string]any{{
+						"contentType": "application/vnd.microsoft.card.adaptive",
+						"content": map[string]any{
+							"$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
+							"type":    "AdaptiveCard",
+							"version": "1.5",
+							"body": []map[string]any{
+								{
+									"type": "TextBlock",
+									"text": fmt.Sprintf("%s: %s", env("APP_NAME", "Fast CRUD"), event.Type),
+									"wrap": true,
+								},
+								{
+									"type": "TextBlock",
+									"text": fmt.Sprintf("Item ID: %d\nName: %s\nTime: %s", event.Item.ID, event.Item.Name, event.Timestamp.Format(time.RFC3339)),
+									"wrap": true,
+								},
+							},
+						},
+					}},
+				}
 				if payload, err := json.Marshal(card); err == nil {
 					go func() {
 						req, err := http.NewRequest(http.MethodPost, teamURL, strings.NewReader(string(payload)))
@@ -276,6 +298,8 @@ func (a *App) deleteFile(c *fiber.Ctx) error {
 	if err := a.s3.RemoveObject(ctx, a.cfg.S3Bucket, key, minio.RemoveObjectOptions{}); err != nil {
 		return fiber.NewError(502, "object storage delete failed")
 	}
+	audit := a.audit
+	_ = audit
 	a.audit(ctx, c, "delete", "object", key, "application file deleted")
 	return c.SendStatus(204)
 }
