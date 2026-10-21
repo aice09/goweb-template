@@ -68,15 +68,18 @@ type Item struct {
 	CreatedAt   time.Time `json:"created_at"`
 	UpdatedAt   time.Time `json:"updated_at"`
 }
+
 type ItemInput struct {
 	Name        string `json:"name"`
 	Description string `json:"description"`
 }
+
 type Event struct {
 	Type      string    `json:"type"`
 	Item      Item      `json:"item"`
 	Timestamp time.Time `json:"timestamp"`
 }
+
 type Claims struct {
 	Username string `json:"u"`
 	Expires  int64  `json:"e"`
@@ -88,6 +91,7 @@ func env(key, fallback string) string {
 	}
 	return fallback
 }
+
 func parseInt(key string, fallback int) int {
 	v, err := strconv.Atoi(os.Getenv(key))
 	if err != nil {
@@ -95,6 +99,7 @@ func parseInt(key string, fallback int) int {
 	}
 	return v
 }
+
 func loadConfig() (Config, error) {
 	secret := env("SESSION_SECRET", "")
 	if len(secret) < 32 {
@@ -117,12 +122,12 @@ func loadConfig() (Config, error) {
 		HTTPAddr:    env("HTTP_ADDR", ":3000"),
 		DatabaseURL: env("DATABASE_URL", ""),
 		DBMaxConns:  int32(parseInt("DB_MAX_CONNS", 20)), DBMinConns: int32(parseInt("DB_MIN_CONNS", 2)),
-		RedisAddr: env("REDIS_ADDR", "localhost:6379"), RedisPassword: os.Getenv("REDIS_PASSWORD"), RedisDB: parseInt("REDIS_DB", 0),
-		NATSURL: env("NATS_URL", nats.DefaultURL), SubjectPrefix: env("NATS_SUBJECT_PREFIX", "items"),
-		CacheTTL: cacheTTL, SessionSecret: []byte(secret), SessionTTL: ttl,
+		RedisAddr:   env("REDIS_ADDR", "localhost:6379"), RedisPassword: os.Getenv("REDIS_PASSWORD"), RedisDB: parseInt("REDIS_DB", 0),
+		NATSURL:     env("NATS_URL", nats.DefaultURL), SubjectPrefix: env("NATS_SUBJECT_PREFIX", "items"),
+		CacheTTL:    cacheTTL, SessionSecret: []byte(secret), SessionTTL: ttl,
 		CookieSecure: strings.EqualFold(env("COOKIE_SECURE", "false"), "true"),
 		SetupToken:   env("SETUP_TOKEN", ""), TrustedOrigins: origins,
-		S3Enabled: strings.EqualFold(env("S3_ENABLED", "false"), "true"), S3Bucket: env("S3_BUCKET", "fast-crud-files"),
+		S3Enabled:    strings.EqualFold(env("S3_ENABLED", "false"), "true"), S3Bucket: env("S3_BUCKET", "fast-crud-files"),
 	}, nil
 }
 
@@ -133,11 +138,13 @@ func randomToken(n int) (string, error) {
 	}
 	return base64.RawURLEncoding.EncodeToString(b), nil
 }
+
 func (a *App) sign(payload string) string {
 	mac := hmac.New(sha256.New, a.cfg.SessionSecret)
 	mac.Write([]byte(payload))
 	return payload + "." + base64.RawURLEncoding.EncodeToString(mac.Sum(nil))
 }
+
 func (a *App) verifySigned(value string) (string, bool) {
 	i := strings.LastIndexByte(value, '.')
 	if i < 1 {
@@ -155,10 +162,12 @@ func (a *App) verifySigned(value string) (string, bool) {
 	}
 	return payload, true
 }
+
 func (a *App) issueSession(username string) string {
 	payload, _ := json.Marshal(Claims{Username: username, Expires: time.Now().Add(a.cfg.SessionTTL).Unix()})
 	return a.sign(base64.RawURLEncoding.EncodeToString(payload))
 }
+
 func (a *App) session(c *fiber.Ctx) (Claims, bool) {
 	raw := c.Cookies("session")
 	payload, ok := a.verifySigned(raw)
@@ -175,9 +184,11 @@ func (a *App) session(c *fiber.Ctx) (Claims, bool) {
 	}
 	return claims, true
 }
+
 func (a *App) setCookie(c *fiber.Ctx, name, value string, httpOnly bool, maxAge int) {
 	c.Cookie(&fiber.Cookie{Name: name, Value: value, Path: "/", HTTPOnly: httpOnly, Secure: a.cfg.CookieSecure, SameSite: "Strict", MaxAge: maxAge})
 }
+
 func (a *App) csrfOK(c *fiber.Ctx) bool {
 	cookie := c.Cookies("csrf")
 	header := c.Get("X-CSRF-Token")
@@ -186,16 +197,18 @@ func (a *App) csrfOK(c *fiber.Ctx) bool {
 	}
 	return subtle.ConstantTimeCompare([]byte(cookie), []byte(header)) == 1
 }
+
 func (a *App) ensureCSRF(c *fiber.Ctx) error {
 	if c.Cookies("csrf") == "" {
 		t, err := randomToken(32)
 		if err != nil {
 			return fiber.ErrInternalServerError
 		}
-		a.setCookie(c, "csrf", t, false, int((12 * time.Hour).Seconds()))
+		a.setCookie(c, "csrf", t, false, int((12*time.Hour).Seconds()))
 	}
 	return c.Next()
 }
+
 func (a *App) requireAuth(c *fiber.Ctx) error {
 	claims, ok := a.session(c)
 	if !ok {
@@ -207,6 +220,7 @@ func (a *App) requireAuth(c *fiber.Ctx) error {
 	c.Locals("username", claims.Username)
 	return c.Next()
 }
+
 func (a *App) setupNeeded(ctx context.Context) (bool, error) {
 	var count int
 	err := a.db.QueryRow(ctx, `SELECT count(*) FROM app_users`).Scan(&count)
@@ -215,6 +229,7 @@ func (a *App) setupNeeded(ctx context.Context) (bool, error) {
 	}
 	return count == 0, nil
 }
+
 func (a *App) publish(eventType string, item Item) {
 	body, err := json.Marshal(Event{Type: eventType, Item: item, Timestamp: time.Now().UTC()})
 	if err != nil {
@@ -237,6 +252,7 @@ func (a *App) publish(eventType string, item Item) {
 		log.Printf("durable JetStream publish failed for %s: %v", eventType, err)
 	}
 }
+
 func (a *App) audit(ctx context.Context, c *fiber.Ctx, action, resource string, resourceID string, details string) {
 	if strings.EqualFold(env("AUDIT_ENABLED", "true"), "false") {
 		return
@@ -267,6 +283,7 @@ func (a *App) invalidate(id int64) {
 		log.Printf("redis invalidate: %v", err)
 	}
 }
+
 func validateInput(in ItemInput) error {
 	in.Name = strings.TrimSpace(in.Name)
 	if in.Name == "" {
@@ -280,6 +297,7 @@ func validateInput(in ItemInput) error {
 	}
 	return nil
 }
+
 func (a *App) create(c *fiber.Ctx) error {
 	var in ItemInput
 	if err := c.BodyParser(&in); err != nil {
@@ -302,6 +320,7 @@ func (a *App) create(c *fiber.Ctx) error {
 	a.publish("created", it)
 	return c.Status(201).JSON(it)
 }
+
 func (a *App) list(c *fiber.Ctx) error {
 	limit, err := strconv.Atoi(c.Query("limit", "25"))
 	if err != nil {
@@ -337,6 +356,7 @@ func (a *App) list(c *fiber.Ctx) error {
 	}
 	return c.JSON(fiber.Map{"data": items, "limit": limit, "offset": offset})
 }
+
 func (a *App) get(c *fiber.Ctx) error {
 	id, err := strconv.ParseInt(c.Params("id"), 10, 64)
 	if err != nil || id < 1 {
@@ -376,6 +396,7 @@ func (a *App) get(c *fiber.Ctx) error {
 	}
 	return c.JSON(it)
 }
+
 func (a *App) update(c *fiber.Ctx) error {
 	id, err := strconv.ParseInt(c.Params("id"), 10, 64)
 	if err != nil || id < 1 {
@@ -404,6 +425,7 @@ func (a *App) update(c *fiber.Ctx) error {
 	a.publish("updated", it)
 	return c.JSON(it)
 }
+
 func (a *App) delete(c *fiber.Ctx) error {
 	id, err := strconv.ParseInt(c.Params("id"), 10, 64)
 	if err != nil || id < 1 {
@@ -699,7 +721,6 @@ func main() {
 			return fiber.ErrInternalServerError
 		}
 		defer tx.Rollback(ctx)
-		// Lock the users table to prevent two concurrent setup requests from creating separate first users.
 		if _, err = tx.Exec(ctx, `LOCK TABLE app_users IN EXCLUSIVE MODE`); err != nil {
 			return fiber.ErrInternalServerError
 		}

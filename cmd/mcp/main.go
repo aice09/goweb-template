@@ -1,6 +1,7 @@
 // Fast CRUD MCP server. Uses stdio JSON-RPC and exposes database tools.
 // Read-only tools are enabled by default. Set MCP_ENABLE_MUTATIONS=true only
 // when the MCP client and its host are trusted and mutation approvals are enforced.
+
 package main
 
 import (
@@ -25,20 +26,24 @@ type rpcRequest struct {
 	Method  string          `json:"method"`
 	Params  json.RawMessage `json:"params"`
 }
+
 type rpcResponse struct {
 	JSONRPC string    `json:"jsonrpc"`
 	ID      any       `json:"id"`
 	Result  any       `json:"result,omitempty"`
 	Error   *rpcError `json:"error,omitempty"`
 }
+
 type rpcError struct {
 	Code    int    `json:"code"`
 	Message string `json:"message"`
 }
+
 type toolCall struct {
 	Name      string         `json:"name"`
 	Arguments map[string]any `json:"arguments"`
 }
+
 type Item struct {
 	ID          int64     `json:"id"`
 	Name        string    `json:"name"`
@@ -57,6 +62,7 @@ func response(id json.RawMessage, result any) rpcResponse {
 	}
 	return rpcResponse{JSONRPC: "2.0", ID: v, Result: result}
 }
+
 func failure(id json.RawMessage, code int, message string) rpcResponse {
 	var v any
 	if len(id) > 0 {
@@ -64,21 +70,89 @@ func failure(id json.RawMessage, code int, message string) rpcResponse {
 	}
 	return rpcResponse{JSONRPC: "2.0", ID: v, Error: &rpcError{Code: code, Message: message}}
 }
+
 func tools() []map[string]any {
 	out := []map[string]any{
-		{"name": "health_check", "description": "Check PostgreSQL connectivity and return service status. Read-only.", "inputSchema": map[string]any{"type": "object", "properties": map[string]any{}, "additionalProperties": false}},
-		{"name": "list_items", "description": "List items using bounded pagination. Read-only.", "inputSchema": map[string]any{"type": "object", "properties": map[string]any{"limit": map[string]any{"type": "integer", "minimum": 1, "maximum": 100}, "offset": map[string]any{"type": "integer", "minimum": 0}}, "additionalProperties": false}},
-		{"name": "get_item", "description": "Retrieve one item by numeric ID. Read-only.", "inputSchema": map[string]any{"type": "object", "required": []string{"id"}, "properties": map[string]any{"id": map[string]any{"type": "integer", "minimum": 1}}, "additionalProperties": false}},
+		{
+			"name":        "health_check",
+			"description": "Check PostgreSQL connectivity and return service status. Read-only.",
+			"inputSchema": map[string]any{
+				"type":                 "object",
+				"properties":           map[string]any{},
+				"additionalProperties": false,
+			},
+		},
+		{
+			"name":        "list_items",
+			"description": "List items using bounded pagination. Read-only.",
+			"inputSchema": map[string]any{
+				"type": "object",
+				"properties": map[string]any{
+					"limit":  map[string]any{"type": "integer", "minimum": 1, "maximum": 100},
+					"offset": map[string]any{"type": "integer", "minimum": 0},
+				},
+				"additionalProperties": false,
+			},
+		},
+		{
+			"name":        "get_item",
+			"description": "Retrieve one item by numeric ID. Read-only.",
+			"inputSchema": map[string]any{
+				"type":     "object",
+				"required": []string{"id"},
+				"properties": map[string]any{
+					"id": map[string]any{"type": "integer", "minimum": 1},
+				},
+				"additionalProperties": false,
+			},
+		},
 	}
 	if mutations {
 		out = append(out,
-			map[string]any{"name": "create_item", "description": "Create an item. Requires MCP_ENABLE_MUTATIONS=true and a trusted MCP host.", "inputSchema": map[string]any{"type": "object", "required": []string{"name"}, "properties": map[string]any{"name": map[string]any{"type": "string", "minLength": 1, "maxLength": 200}, "description": map[string]any{"type": "string", "maxLength": 10000}}, "additionalProperties": false}},
-			map[string]any{"name": "update_item", "description": "Update an item. Requires MCP_ENABLE_MUTATIONS=true and a trusted MCP host.", "inputSchema": map[string]any{"type": "object", "required": []string{"id", "name"}, "properties": map[string]any{"id": map[string]any{"type": "integer", "minimum": 1}, "name": map[string]any{"type": "string", "minLength": 1, "maxLength": 200}, "description": map[string]any{"type": "string", "maxLength": 10000}}, "additionalProperties": false}},
-			map[string]any{"name": "delete_item", "description": "Delete an item. Destructive; requires MCP_ENABLE_MUTATIONS=true and explicit user approval in the MCP client.", "inputSchema": map[string]any{"type": "object", "required": []string{"id"}, "properties": map[string]any{"id": map[string]any{"type": "integer", "minimum": 1}}, "additionalProperties": false}},
+			map[string]any{
+				"name":        "create_item",
+				"description": "Create an item. Requires MCP_ENABLE_MUTATIONS=true and a trusted MCP host.",
+				"inputSchema": map[string]any{
+					"type":     "object",
+					"required": []string{"name"},
+					"properties": map[string]any{
+						"name":        map[string]any{"type": "string", "minLength": 1, "maxLength": 200},
+						"description": map[string]any{"type": "string", "maxLength": 10000},
+					},
+					"additionalProperties": false,
+				},
+			},
+			map[string]any{
+				"name":        "update_item",
+				"description": "Update an item. Requires MCP_ENABLE_MUTATIONS=true and a trusted MCP host.",
+				"inputSchema": map[string]any{
+					"type":     "object",
+					"required": []string{"id", "name"},
+					"properties": map[string]any{
+						"id":          map[string]any{"type": "integer", "minimum": 1},
+						"name":        map[string]any{"type": "string", "minLength": 1, "maxLength": 200},
+						"description": map[string]any{"type": "string", "maxLength": 10000},
+					},
+					"additionalProperties": false,
+				},
+			},
+			map[string]any{
+				"name":        "delete_item",
+				"description": "Delete an item. Destructive; requires MCP_ENABLE_MUTATIONS=true and explicit user approval in the MCP client.",
+				"inputSchema": map[string]any{
+					"type":     "object",
+					"required": []string{"id"},
+					"properties": map[string]any{
+						"id": map[string]any{"type": "integer", "minimum": 1},
+					},
+					"additionalProperties": false,
+				},
+			},
 		)
 	}
 	return out
 }
+
 func numArg(args map[string]any, key string, fallback int64) (int64, error) {
 	v, ok := args[key]
 	if !ok {
@@ -90,6 +164,7 @@ func numArg(args map[string]any, key string, fallback int64) (int64, error) {
 	}
 	return int64(f), nil
 }
+
 func strArg(args map[string]any, key string, required bool, max int) (string, error) {
 	v, ok := args[key]
 	if !ok {
@@ -111,6 +186,7 @@ func strArg(args map[string]any, key string, required bool, max int) (string, er
 	}
 	return s, nil
 }
+
 func runTool(ctx context.Context, call toolCall) (any, error) {
 	switch call.Name {
 	case "health_check":
@@ -251,6 +327,7 @@ func runTool(ctx context.Context, call toolCall) (any, error) {
 		return nil, fmt.Errorf("unknown tool %q", call.Name)
 	}
 }
+
 func handle(req rpcRequest) *rpcResponse {
 	switch req.Method {
 	case "initialize":
@@ -298,6 +375,7 @@ func handle(req rpcRequest) *rpcResponse {
 		return &r
 	}
 }
+
 func main() {
 	url := os.Getenv("DATABASE_URL")
 	if url == "" {
