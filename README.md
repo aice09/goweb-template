@@ -229,4 +229,4 @@ These additions are not production-verified in this environment because Go depen
 
 ## Deploy documentation to Vercel
 
-The repository includes `vercel.json` to build and publish the complete Sphinx documentation site with the Read the Docs theme. In Vercel, import `aice09/goweb-template`, keep the project root at the repository root, and use the `Other` framework preset. Vercel will install `docs/requirements.txt`, build the pages, and serve `docs/_build/html`. Connect the `main` branch for automatic production deployments; use the Vercel project URL or attach a custom domain in project settings.
+The repository includes `vercel.json` to build and publish the complete Sphinx documentation site with the Read the Docs theme. In Vercel, import `aice09/goweb-template`, select `docs` as the project root, and use the `Other` framework preset. Vercel will install `requirements.txt`, build the pages, and serve `_build/html` from the `docs` project root. Connect the `main` branch for automatic production deployments; use the Vercel project URL or attach a custom domain in project settings.
