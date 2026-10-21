@@ -1,0 +1,27 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: fast-crud-prod
+resources:
+  - ../../base
+images:
+  - name: ghcr.io/YOUR_ORG/fast-crud
+    newName: ghcr.io/YOUR_ORG/fast-crud
+    newTag: prod-REPLACE_WITH_IMMUTABLE_TAG
+patches:
+  - target:
+      kind: Namespace
+      name: fast-crud
+    patch: |-
+      - op: replace
+        path: /metadata/name
+        value: fast-crud-prod
+  - target:
+      kind: ConfigMap
+      name: fast-crud-config
+    patch: |-
+      - op: replace
+        path: /data/APP_ENV
+        value: production
+      - op: replace
+        path: /data/TRUSTED_ORIGINS
+        value: https://crud-prod.example.com

@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex,nofollow"><meta name="description" content="Fast CRUD administrator dashboard">
+  <title>Items · Fast CRUD</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.datatables.net/2.3.2/css/dataTables.bootstrap5.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" rel="stylesheet">
+  <link href="/assets/app.css" rel="stylesheet">
+</head>
+<body>
+<nav class="navbar navbar-expand-lg bg-white border-bottom"><div class="container app-shell">
+  <a class="navbar-brand fw-semibold" href="/"><i class="fa-solid fa-layer-group text-primary me-2"></i>Fast CRUD</a>
+  <div class="d-flex align-items-center gap-3"><span class="small text-secondary" id="signed-in"></span><button class="btn btn-outline-secondary btn-sm" id="logout"><i class="fa-solid fa-right-from-bracket me-1"></i>Sign out</button></div>
+</div></nav>
+<main class="container app-shell py-4">
+  <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+    <div><h1 class="h3 mb-1">Items</h1><p class="text-secondary mb-0">Create, search, edit, and delete records.</p></div>
+    <button class="btn btn-primary" id="create-item"><i class="fa-solid fa-plus me-2"></i>New item</button>
+  </div>
+  <div id="notice" class="alert d-none" role="status"></div>
+  <div class="card"><div class="card-body">
+    <div class="table-responsive"><table id="items-table" class="table table-striped table-hover align-middle w-100">
+      <thead><tr><th>ID</th><th>Name</th><th>Description</th><th>Updated</th><th>Actions</th></tr></thead><tbody></tbody>
+    </table></div>
+  </div></div>
+</main>
+<div class="modal fade" id="item-modal" tabindex="-1" aria-labelledby="item-modal-title" aria-hidden="true">
+  <div class="modal-dialog"><div class="modal-content">
+    <form id="item-form">
+      <div class="modal-header"><h2 class="modal-title fs-5" id="item-modal-title">Create item</h2><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button></div>
+      <div class="modal-body">
+        <input type="hidden" id="item-id">
+        <div class="mb-3"><label for="item-name" class="form-label">Name</label><input class="form-control" id="item-name" maxlength="200" required></div>
+        <div class="mb-3"><label for="item-description" class="form-label">Description</label><textarea class="form-control" id="item-description" rows="4" maxlength="10000"></textarea></div>
+      </div>
+      <div class="modal-footer"><button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button><button class="btn btn-primary" id="save-item" type="submit">Save</button></div>
+    </form>
+  </div></div>
+</div>
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.datatables.net/2.3.2/js/dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/2.3.2/js/dataTables.bootstrap5.min.js"></script>
+<script src="/assets/app.js"></script>
+<script src="/assets/dashboard.js"></script>
+</body></html>

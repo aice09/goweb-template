@@ -1,0 +1,93 @@
+replicaCount: 2
+
+image:
+  repository: ghcr.io/YOUR_ORG/fast-crud
+  tag: "0.1.0"
+  pullPolicy: IfNotPresent
+
+nameOverride: ""
+fullnameOverride: ""
+
+service:
+  type: ClusterIP
+  port: 80
+  targetPort: 3000
+
+ingress:
+  enabled: true
+  className: nginx
+  annotations:
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+  host: crud.example.com
+  tls:
+    enabled: true
+    secretName: fast-crud-tls
+
+config:
+  APP_ENV: production
+  APP_NAME: Fast CRUD
+  HTTP_ADDR: ":3000"
+  TRUSTED_ORIGINS: https://crud.example.com
+  DB_MAX_CONNS: "20"
+  DB_MIN_CONNS: "2"
+  REDIS_ADDR: redis.example.internal:6379
+  REDIS_DB: "0"
+  CACHE_TTL: 60s
+  NATS_URL: tls://nats.example.internal:4222
+  NATS_STREAM: FASTCRUD_EVENTS
+  NATS_SUBJECT_PREFIX: items
+  NATS_MAX_AGE: 168h
+  NATS_REPLICAS: "3"
+  COOKIE_SECURE: "true"
+  SESSION_TTL: 12h
+  CSP_ENABLED: "true"
+  CSP_REPORT_ONLY: "false"
+  HSTS_ENABLED: "true"
+  HSTS_MAX_AGE: "31536000"
+  AUDIT_ENABLED: "true"
+  S3_ENABLED: "false"
+  S3_ENDPOINT: s3.amazonaws.com
+  S3_REGION: ap-southeast-1
+  S3_BUCKET: fast-crud-files
+  S3_USE_SSL: "true"
+  SMTP_HOST: ""
+  SMTP_PORT: "587"
+  EMAIL_FROM: fast-crud@example.com
+  EMAIL_NOTIFY_TO: ""
+  BACKUP_ENABLED: "true"
+  BACKUP_RETENTION_DAYS: "30"
+  BACKUP_ENCRYPTION_ENABLED: "true"
+
+# Reference a pre-created Kubernetes Secret. Never put secret values in values.yaml.
+existingSecret: fast-crud-secrets
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 128Mi
+  limits:
+    cpu: "1"
+    memory: 512Mi
+
+autoscaling:
+  enabled: false
+  minReplicas: 2
+  maxReplicas: 10
+  targetCPUUtilizationPercentage: 70
+
+podSecurityContext:
+  runAsNonRoot: true
+  runAsUser: 65532
+  runAsGroup: 65532
+  seccompProfile:
+    type: RuntimeDefault
+
+containerSecurityContext:
+  allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: true
+  capabilities:
+    drop: ["ALL"]
+
+serviceAccount:
+  create: true
+  automount: false

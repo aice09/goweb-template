@@ -1,0 +1,11 @@
+body { background: #f5f7fb; }
+.navbar-brand { letter-spacing: .2px; }
+.app-shell { max-width: 1200px; }
+.card { border: 1px solid #e8ebf0; box-shadow: 0 2px 8px rgba(15,23,42,.03); }
+.required::after { content: " *"; color: #dc3545; }
+#notice { white-space: pre-wrap; }
+.dataTables_wrapper .dataTables_filter input { margin-left: .5rem; }
+
+.setup-container { max-width: 760px; }
+.login-container { max-width: 480px; }
+.progress-bar-full { width: 100%; }
