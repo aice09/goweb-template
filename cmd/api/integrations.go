@@ -8,7 +8,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
-	"mime/multipart"
+	"net/textproto"
 	"net/http"
 	"net/smtp"
 	"net/url"
@@ -215,8 +215,8 @@ func (a *App) uploadFile(c *fiber.Ctx) error {
 	return c.Status(201).JSON(fiber.Map{"key": key, "size": info.Size, "bucket": a.cfg.S3Bucket})
 }
 
-func safeContentType(h multipart.FileHeader) string {
-	ct := h.Header.Get("Content-Type")
+func safeContentType(h textproto.MIMEHeader) string {
+	ct := h.Get("Content-Type")
 	if ct == "" || strings.ContainsAny(ct, "\r\n") {
 		return "application/octet-stream"
 	}
