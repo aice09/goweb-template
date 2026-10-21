@@ -1,7 +1,7 @@
 ﻿from datetime import date
 
 project = "goweb-template"
-author = "goweb-template contributors"
+author = "Carl Angelo Nievarez"
 release = "0.1.0"
 year = date.today().year
 copyright = f"{year}, {author}"
