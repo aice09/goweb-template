@@ -1,4 +1,4 @@
-# Fast CRUD Pro — Getting Started
+# goweb-template — Getting Started
 
 This guide covers prerequisites, local installation, configuration, optional integrations, Kubernetes deployment, and the normal upgrade workflow.
 
@@ -46,8 +46,8 @@ Have a DNS name, TLS termination, a trusted container registry, a managed or bac
 ## 3. Get the source and configure secrets
 
 ```bash
-git clone <YOUR_REPOSITORY_URL> fast-crud-pro
-cd fast-crud-pro
+git clone https://github.com/aice09/goweb-template.git goweb-template
+cd goweb-template
 cp .env.example .env
 ```
 

@@ -1,8 +1,11 @@
-# Fast CRUD — Go, PostgreSQL, Redis, NATS
+# goweb-template — Go, PostgreSQL, Redis, NATS
 
 A deployable starter for a CRUD web application with a Bootstrap admin UI, setup wizard, PostgreSQL persistence, Redis read cache, NATS events, security defaults, QA automation, and optional Prometheus/Grafana observability.
 
 ## Documentation
+
+[Read the Docs](https://goweb-template.readthedocs.io/)
+
 
 - [Getting Started](docs/GETTING_STARTED.md) — prerequisites, install, first-run setup, Docker, Kubernetes, Argo CD, upgrade, and troubleshooting.
 - [Operations and Recovery](docs/OPERATIONS.md) — health checks, backup/restore, rollback, incident handling, and monitoring.

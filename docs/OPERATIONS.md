@@ -1,4 +1,4 @@
-# Fast CRUD Pro — Operations and Recovery
+# goweb-template — Operations and Recovery
 
 This runbook covers routine operation, PostgreSQL backup/restore, upgrades, rollback, monitoring, and incident handling.
 
