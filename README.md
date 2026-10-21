@@ -226,3 +226,7 @@ The snippet is an illustrative MCP host configuration; adapt it to the client yo
 - **Common integrations:** Keycloak/LDAP configuration scaffolding, NATS JetStream, Redis, Prometheus/Grafana, CI, and PostgreSQL backup scripts remain available. See `integrations/README.md` for implementation boundaries.
 
 These additions are not production-verified in this environment because Go dependencies could not be downloaded. Run `go mod tidy`, `go test ./...`, Docker builds, Kustomize builds, and an integration test in CI before deploying. Webhook delivery is currently best-effort without durable retry; S3 object ownership/tenant authorization and Teams bidirectional chat are not implemented.
+
+## Deploy documentation to Vercel
+
+The repository includes `vercel.json` to build and publish the complete Sphinx documentation site with the Read the Docs theme. In Vercel, import `aice09/goweb-template`, keep the project root at the repository root, and use the `Other` framework preset. Vercel will install `docs/requirements.txt`, build the pages, and serve `docs/_build/html`. Connect the `main` branch for automatic production deployments; use the Vercel project URL or attach a custom domain in project settings.
