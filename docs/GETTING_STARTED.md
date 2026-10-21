@@ -1,4 +1,4 @@
-# goweb-template — Getting Started
+# Getting Started
 
 This guide covers prerequisites, local installation, configuration, optional integrations, Kubernetes deployment, and the normal upgrade workflow.
 

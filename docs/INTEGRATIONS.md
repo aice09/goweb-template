@@ -1,4 +1,4 @@
-# goweb-template — Integration Guide
+# Integration Guide
 
 This guide describes the intent, setup boundaries, and security requirements for optional integrations. Feature availability depends on the code path and provider setup in the checked-out release. Test integrations in a non-production environment before relying on them.
 
